@@ -146,7 +146,7 @@ SENTIMENT_COLOR = {"Positif": "#28a745", "Netral": "#6c757d", "Negatif": "#dc354
 st.sidebar.title("⚙️ Pengaturan")
 menu = st.sidebar.radio(
     "Pilih Fitur:",
-    ["🏠 Beranda", "🔍 Prediksi Teks", "📁 Prediksi File CSV"],
+    ["🏠 Beranda", "🔍 Klasifikasi Teks", "📁 Klasifikasi File CSV"],
 )
 st.sidebar.markdown("---")
 st.sidebar.info(
@@ -196,7 +196,7 @@ if menu == "🏠 Beranda":
             ↓  Preprocessing (Case Folding → Cleaning → Normalisasi → Tokenisasi → Stopword → Stemming)
             ↓  TF-IDF Vectorization
             ↓  Multinomial NB with SMOTE
-            ↓  Prediksi
+            ↓  Klasifikasi
         Output Sentimen
         ```
         """
@@ -209,20 +209,20 @@ if menu == "🏠 Beranda":
             "berada di direktori yang sama dengan `app.py`."
         )
 
-elif menu == "🔍 Prediksi Teks":
-    st.title("🔍 Prediksi Sentimen Teks")
+elif menu == "🔍 Klasifikasi Teks":
+    st.title("🔍 Klasifikasi Sentimen Teks")
 
     if not resources_ok:
         st.error(f"⚠️ Model tidak tersedia: {missing}")
     else:
         user_input = st.text_area(
-            "Masukkan teks yang ingin diprediksi:",
+            "Masukkan teks yang ingin diklasifikasi:",
             placeholder="Contoh: Indonesia gabung BoP merupakan langkah positif untuk perdamaian.",
             height=150,
         )
 
         col1, col2 = st.columns([1, 4])
-        predict_btn = col1.button("🔮 Prediksi", use_container_width=True)
+        predict_btn = col1.button("🔮 Klasifikasi", use_container_width=True)
         col2.button("🗑️ Bersihkan", on_click=lambda: None, use_container_width=True)
 
         if predict_btn:
@@ -249,7 +249,7 @@ elif menu == "🔍 Prediksi Teks":
                             margin: 10px 0;
                         ">
                             <h2 style="color:{color}; margin:0;">{emoji} {label}</h2>
-                            <p style="margin:5px 0 0 0; color:#555;">Prediksi sentimen untuk teks yang dimasukkan</p>
+                            <p style="margin:5px 0 0 0; color:#555;">Klasifikasi sentimen untuk teks yang dimasukkan</p>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -275,14 +275,14 @@ elif menu == "🔍 Prediksi Teks":
                         st.markdown(f"**Teks asli:**\n> {user_input}")
                         st.markdown(f"**Teks setelah preprocessing:**\n> `{cleaned_text}`")
 
-elif menu == "📁 Prediksi File CSV":
-    st.title("📁 Prediksi Batch dari File CSV")
+elif menu == "📁 Klasifikasi File CSV":
+    st.title("📁 Klasifikasi Batch dari File CSV")
 
     if not resources_ok:
         st.error(f"⚠️ Model tidak tersedia: {missing}")
     else:
         st.markdown(
-            "Upload file CSV dengan kolom teks. Aplikasi akan menambahkan kolom `Sentimen_Prediksi`."
+            "Upload file CSV dengan kolom teks. Aplikasi akan menambahkan kolom `Sentimen_Klasifikasi`."
         )
 
         uploaded_file = st.file_uploader("Pilih file CSV", type=["csv"])
@@ -294,23 +294,23 @@ elif menu == "📁 Prediksi File CSV":
 
             text_col = st.selectbox("Pilih kolom teks:", df_input.columns.tolist())
 
-            if st.button("🚀 Jalankan Prediksi Batch"):
+            if st.button("🚀 Jalankan Klasifikasi Batch"):
                 progress = st.progress(0)
                 predictions = []
                 total = len(df_input)
 
                 for i, text in enumerate(df_input[text_col].astype(str)):
                     result = predict_sentiment(text, model, vectorizer, kamus, stop_words, stemmer)
-                    predictions.append(result[0] if result[0] else "Tidak Dapat Diprediksi")
+                    predictions.append(result[0] if result[0] else "Tidak Dapat Diklasifikasi")
                     progress.progress((i + 1) / total)
 
-                df_input["Sentimen_Prediksi"] = predictions
-                st.success("✅ Prediksi selesai!")
+                df_input["Sentimen_Klasifikasi"] = predictions
+                st.success("✅ Klasifikasi selesai!")
                 st.dataframe(df_input)
 
                 # Distribusi hasil
-                st.markdown("#### Distribusi Hasil Prediksi")
-                counts = df_input["Sentimen_Prediksi"].value_counts()
+                st.markdown("#### Distribusi Hasil Klasifikasi")
+                counts = df_input["Sentimen_Klasifikasi"].value_counts()
                 fig, ax = plt.subplots(figsize=(5, 3.5))
                 ax.bar(
                     counts.index,
@@ -330,6 +330,6 @@ elif menu == "📁 Prediksi File CSV":
                 st.download_button(
                     "⬇️ Download Hasil CSV",
                     csv_out,
-                    file_name="hasil_prediksi_sentimen.csv",
+                    file_name="hasil_klasifikasi_sentimen.csv",
                     mime="text/csv",
                 )
